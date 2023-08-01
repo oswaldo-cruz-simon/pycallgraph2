@@ -23,4 +23,4 @@ class Grouper(object):
                     # the end, it's only noise and can be removed
                     return pattern[:-2]
                 return pattern
-        return full_name.split('.', 1)[0]
+        return full_name.split('.')[max(len(full_name.split('.'))-2,0)]
