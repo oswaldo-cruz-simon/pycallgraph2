@@ -21,11 +21,11 @@ class GlobbingFilter(object):
         self.exclude = exclude
 
     def __call__(self, full_name=None):
-        for pattern in ['pycallgraph.*', '*.<dictcomp>', '*.<module>', '*.<listcomp>', '*.<listcomp>', '*.<lambda>']: #, '*.<lambda>']:
+        for pattern in self.exclude:
             if fnmatch(full_name, pattern):
                 return False
 
-        for pattern in ['classication.*', 'inventory.*', 'parse_args', 'main']:
+        for pattern in self.include:
             if fnmatch(full_name, pattern):
                 return True
 
