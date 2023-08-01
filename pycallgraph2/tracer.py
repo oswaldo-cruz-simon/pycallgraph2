@@ -184,8 +184,13 @@ class TraceProcessor(Thread):
 
             # Work out the class name
             try:
-                class_name = frame.f_locals['self'].__class__.__name__
-                full_name_list.append(class_name)
+
+                if 'self' in frame.f_locals:
+                    class_name = frame.f_locals['self'].__class__.__name__
+                    full_name_list.append(class_name)
+                elif 'cls' in frame.f_locals:
+                    class_name = frame.f_locals.get('cls').__name__
+                    full_name_list.append(class_name)
             except (KeyError, AttributeError):
                 pass
 
@@ -206,11 +211,16 @@ class TraceProcessor(Thread):
             if keep and self.config.trace_filter:
                 keep = self.config.trace_filter(full_name)
 
+            def find_first_not_null(stack):
+                for i in stack:
+                    if i != '':
+                        return i
+
             # Store the call information
             if keep:
 
                 if self.call_stack:
-                    src_func = self.call_stack[-1]
+                    src_func = find_first_not_null(self.call_stack[::-1])
                 else:
                     src_func = None
 
@@ -312,7 +322,9 @@ class TraceProcessor(Thread):
         return stat_group
 
     def nodes(self):
-        for func, calls in self.func_count.items():
+        nodes_with_edges = {k for k, v in self.call_dict.items()}.union({i for v in self.call_dict.values() for i in v})
+        self.func_count = {k:v for k,v in self.func_count.items() if k in nodes_with_edges}
+        for func, calls in list(self.func_count.items()):
             yield self.stat_group_from_func(func, calls)
 
     def edges(self):
