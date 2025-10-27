@@ -1,3 +1,4 @@
+import re
 from fnmatch import fnmatch
 
 
@@ -23,4 +24,6 @@ class Grouper(object):
                     # the end, it's only noise and can be removed
                     return pattern[:-2]
                 return pattern
-        return full_name.split('.')[max(len(full_name.split('.'))-2,0)]
+        names = full_name.split('.')[::-1]
+        group_name = [name for i, name in enumerate(names) if re.match('^([A-Z]+[a-z]+)*$', name) or i == len(names)-1]
+        return full_name.split('.')[min(1, len(full_name.split('.'))-1)]
